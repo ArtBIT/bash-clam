@@ -2,9 +2,18 @@
 
 source src/clam
 
+# Sanitize global CLAM_COMMAND_NAME
 export PATH="$PATH:$CLAM_BIN"
 if [[ "$CLAM_COMMAND_NAME" =~ [^A-Za-z0-9_] ]]; then
     CLAM_COMMAND_NAME=clam
 fi
 eval "$CLAM_COMMAND_NAME() { bash_clam \"\$@\"; };"
 export -f "$CLAM_COMMAND_NAME"
+
+modules=$(config_grep "#sources=.*" | sed -e 's/#sources=.*//g')
+for module in $modules; do
+    scripts2source=($(config_get "$module#sources"))
+	for script in "${scripts2source[@]}"; do
+        [ -f "$CLAM_MODULES/$module/$script" ] && $(cd "$CLAM_MODULES/$module" && . "$script")
+	done
+done

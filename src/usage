@@ -2,18 +2,24 @@
 
 usage () {
     cat <<HELP_USAGE
-Usage: $CLAM_COMMAND_NAME [command] <url>
+Usage: $CLAM_COMMAND_NAME [command] <github uri>
 Commands: 
  i, install                     Install packages
  l, list                        List installed packages
  u, update                      Update installed packages
  s, status                      Check if packages are up to date
- c, clean                       Clean files of the packages that are no longer being managed
+ r, remove                      Uninstall package
 
-Options:
-     --help					    Show this screen.
- -t, --type <command|plugin>	Specify the type of the module
- -r, --rename <new_name>	    Specify a new name for the module
+Install Options:
+ -h, --help					    Show this screen.
+
+ -s, --source <file>	        This package needs this <file> to be sourced. 
+                                The file should be relative to the git repo root.
+
+ -e, --exec   <file[->dest]>	If the package contains executable files, they will
+                                be copied to the bin directory. You can specify a 
+                                new filename for the script in th ebin folder by 
+                                appending an arrow '->' and then the new name.
 HELP_USAGE
 }
 

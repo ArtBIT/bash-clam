@@ -8,12 +8,27 @@ source $SCRIPTDIR/config
 source $SCRIPTDIR/github
 
 bash_clam() {
+    declare -a sources
+    declare -a executables
     case "$1" in
         h | help | -h | --help) 
             usage
             ;;
         l | list) 
-            config_grep "#repo" | sed 's/.*#repo //g'
+			case "$2" in
+				-b | --bin)
+					ls "$CLAM_BIN"
+					;;
+				-m | --modules)
+					ls "$CLAM_MODULES"
+					;;
+				-c | --config)
+					cat "$CLAM_CONFIG"
+					;;
+				* ) 
+					config_grep "#uri" | sed -e 's/.*#uri=//g'
+					;;
+			esac
             ;;
         u | update) 
             modules=$(config_grep "#name" | sed -e 's/#name.*//g')
@@ -24,8 +39,8 @@ bash_clam() {
             [ ! -z "$modules" ] && echo "$modules" | tr '\n' '\0' | xargs -0 -P10 -I{} bash -c 'github_status "$@"' _ {}
             ;;
         r | remove)
-            repo=$2
-            module=$(slugify "$(github_project_from_uri $repo)")
+            uri=$2
+            module=$(slugify "$(github_project_from_uri $uri)")
             shift 2
 
             # remove any linked bin command
@@ -34,73 +49,76 @@ bash_clam() {
                 rm "$CLAM_BIN/$command"
             fi
 
-            #remove the repo
+            #remove the uri
             rm -rf "$CLAM_MODULES/$module"
 
             # remove it from config
             config_remove "$module"
             ;;
 
-        i | install | *) 
+        i | install | "") 
             shift
 
 
-            module_type=
-            rename_script=
-            script=
             while true; do
                 case "$1" in
-                    -t | --type)
-                        module_type=$2;
+                    -s | --source)
+                        sources=( "${sources[@]}" "$2" )
                         shift 2
                         ;;
-                    -r | --rename)
-                        rename_script=$2;
+                    -e | --exe | --copy-exe )
+                        executables=( "${executables[@]}" "$2" )
                         shift 2
                         ;;
-                    -s | --script)
-                        script=$2;
-                        shift 2
+                    -e | --exe-to | --copy-exe-as )
+                        executables=( "${executables[@]}" "$2:_:$3" )
+                        shift 3
                         ;;
                     -* ) 
                         echo "Invalid option: -$1" >&2
-                        break 
+						exit 1
                         ;;
                     * ) 
                         if [ -z "$1" ]; then
                             break;
                         else
-                            repo=$1
+                            uri=$1
                             shift
                         fi
                         ;;
                 esac
             done
 
-            pushd . &>/dev/null
-            mkdir -p "$CLAM_MODULES" &>/dev/null
-            cd "$CLAM_MODULES"
-            module=$(slugify "$(github_project_from_uri $repo)")
-            github_clone "$repo"
+            module=$(slugify "$(github_project_from_uri $uri)")
+            github_clone "$uri"
             config_set "$module#name" "$module"
-            config_set "$module#repo" "$repo"
-            config_set "$module#type" "$module_type"
-            config_set "$module#script" "$script"
-                echo "${rename_script}${script}"
-            if [[ ! -z "${rename_script}${script}" ]]; then
-                command=${rename_script:-$script}
-                config_set "$module#command" "$command"
-                mkdir -p "$CLAM_BIN" &>/dev/null
+            config_set "$module#uri" "$uri"
+            config_set "$module#sources" "${sources[@]}"
+            config_set "$module#executables" "${executables[@]}"
 
-                cat << EOF > "$CLAM_BIN/$command"
+            for executable in "${executables[@]}"
+			do
+echo "'$executable'"
+				parts=(${executable//:_:/ })
+				src_filename="${parts[0]}"
+echo "'$src_filename'"
+				dest_filename="${parts[1]}"
+				if [ -z "$dest_filename" ]; then
+					dest_filename=$src_filename
+				fi
+echo "'$dest_filename'"
+				dest_filepath="$CLAM_BIN/$(basename "$dest_filename")"
+echo "'$dest_filepath'"
+                cat << EOF > "$dest_filepath"
 #!/bin/bash
 cd "$CLAM_MODULES/$module"
-./$script "\$@"
+./$src_filename "\$@"
 EOF
-                chmod +x "$CLAM_BIN/$command"
-            fi
-
-            popd &>/dev/null
+                chmod +x "$dest_filepath"
+			done
             ;;
+		*)
+			echo "Invalid command $1" >&2
+			exit 1
     esac
 }

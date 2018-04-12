@@ -1,8 +1,5 @@
 # vim: set ft=bash
 
-mkdir -p $CLAM_ROOT &>/dev/null
-touch "$CLAM_CONFIG"
-
 sed_escape() {
   sed -e 's/[]\/$*.^[]/\\&/g'
 }
