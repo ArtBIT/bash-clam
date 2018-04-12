@@ -3,7 +3,7 @@
 
 <h1><img src="/assets/clam.png" height="50"> CLAM</h1>
 
-CLAM is a recursive acronym for "CLAM, Load A Module". CLAM is a simple package manager for bash that helps you install bash scripts and rc files from GitHub.
+CLAM is a recursive acronym for "CLAM, Load A Module". CLAM is a simple package manager for Bash shell which helps you install and manage shell scripts and rc files from GitHub.
 
 # Installation
 ```
