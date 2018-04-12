@@ -1,7 +1,8 @@
 # CLAM
 [![GitHub license](https://img.shields.io/github/license/ArtBIT/bash-clam.svg)](https://github.com/ArtBIT/bash-clam) [![GitHub stars](https://img.shields.io/github/stars/ArtBIT/bash-clam.svg)](https://github.com/ArtBIT/bash-clam)  [![awesomeness](https://img.shields.io/badge/awesomeness-maximum-red.svg)](https://github.com/ArtBIT/bash-clam)
 
-<img src="/assets/clam.png" width="300">
+<h1><img src="/assets/clam.png" height="50"> CLAM</h1>
+
 CLAM is a recursive acronym for "CLAM, Load A Module". It is a simple package manager for bash
 
 # Installation
