@@ -1,0 +1,106 @@
+#!/bin/bash
+# vim: set ft=bash
+
+SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source $SCRIPTDIR/env
+source $SCRIPTDIR/usage
+source $SCRIPTDIR/config
+source $SCRIPTDIR/github
+
+bash_clam() {
+    case "$1" in
+        h | help | -h | --help) 
+            usage
+            ;;
+        l | list) 
+            config_grep "#repo" | sed 's/.*#repo //g'
+            ;;
+        u | update) 
+            modules=$(config_grep "#name" | sed -e 's/#name.*//g')
+            [ ! -z "$modules" ] && echo "$modules" | tr '\n' '\0' | xargs -0 -P10 -I{} bash -c 'github_update "$@"' _ {}
+            ;;
+        s | status) 
+            modules=$(config_grep "#name" | sed -e 's/#name.*//g')
+            [ ! -z "$modules" ] && echo "$modules" | tr '\n' '\0' | xargs -0 -P10 -I{} bash -c 'github_status "$@"' _ {}
+            ;;
+        r | remove)
+            repo=$2
+            module=$(slugify "$(github_project_from_uri $repo)")
+            shift 2
+
+            # remove any linked bin command
+            command=$(config_get "$module#command")
+            if [ ! -z "$command" ]; then
+                rm "$CLAM_BIN/$command"
+            fi
+
+            #remove the repo
+            rm -rf "$CLAM_MODULES/$module"
+
+            # remove it from config
+            config_remove "$module"
+            ;;
+
+        i | install | *) 
+            shift
+
+
+            module_type=
+            rename_script=
+            script=
+            while true; do
+                case "$1" in
+                    -t | --type)
+                        module_type=$2;
+                        shift 2
+                        ;;
+                    -r | --rename)
+                        rename_script=$2;
+                        shift 2
+                        ;;
+                    -s | --script)
+                        script=$2;
+                        shift 2
+                        ;;
+                    -* ) 
+                        echo "Invalid option: -$1" >&2
+                        break 
+                        ;;
+                    * ) 
+                        if [ -z "$1" ]; then
+                            break;
+                        else
+                            repo=$1
+                            shift
+                        fi
+                        ;;
+                esac
+            done
+
+            pushd . &>/dev/null
+            mkdir -p "$CLAM_MODULES" &>/dev/null
+            cd "$CLAM_MODULES"
+            module=$(slugify "$(github_project_from_uri $repo)")
+            github_clone "$repo"
+            config_set "$module#name" "$module"
+            config_set "$module#repo" "$repo"
+            config_set "$module#type" "$module_type"
+            config_set "$module#script" "$script"
+                echo "${rename_script}${script}"
+            if [[ ! -z "${rename_script}${script}" ]]; then
+                command=${rename_script:-$script}
+                config_set "$module#command" "$command"
+                mkdir -p "$CLAM_BIN" &>/dev/null
+
+                cat << EOF > "$CLAM_BIN/$command"
+#!/bin/bash
+cd "$CLAM_MODULES/$module"
+./$script "\$@"
+EOF
+                chmod +x "$CLAM_BIN/$command"
+            fi
+
+            popd &>/dev/null
+            ;;
+    esac
+}

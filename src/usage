@@ -1,0 +1,19 @@
+# vim: set ft=shell
+
+usage () {
+    cat <<HELP_USAGE
+Usage: $CLAM_COMMAND_NAME [command] <url>
+Commands: 
+ i, install                     Install packages
+ l, list                        List installed packages
+ u, update                      Update installed packages
+ s, status                      Check if packages are up to date
+ c, clean                       Clean files of the packages that are no longer being managed
+
+Options:
+     --help					    Show this screen.
+ -t, --type <command|plugin>	Specify the type of the module
+ -r, --rename <new_name>	    Specify a new name for the module
+HELP_USAGE
+}
+

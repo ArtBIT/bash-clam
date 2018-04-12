@@ -1,0 +1,10 @@
+#!/bin/bash
+
+source src/clam
+
+export PATH="$PATH:$CLAM_BIN"
+if [[ "$CLAM_COMMAND_NAME" =~ [^A-Za-z0-9_] ]]; then
+    CLAM_COMMAND_NAME=clam
+fi
+eval "$CLAM_COMMAND_NAME() { bash_clam \"\$@\"; };"
+export -f "$CLAM_COMMAND_NAME"

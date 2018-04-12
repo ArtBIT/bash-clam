@@ -1,0 +1,24 @@
+# vim: set ft=bash
+
+github_status() {
+    echo "$1: $(git -C "$CLAM_MODULES/$1" remote -v update 2>&1 | grep '[][]' | sed 's/.*\[\([^]]*\)\].*/\1/g')"
+}
+
+github_update() {
+    echo "$1: $(git -C "$CLAM_MODULES/$1" pull)"
+}
+
+github_clone() {
+    $(cd "$CLAM_MODULES" &>/dev/null && git clone "https://github.com/$1")
+}
+
+github_project_from_uri() {
+    echo ${1##*/}
+}
+
+github_username_from_uri() {
+    echo ${1%/*}
+}
+
+export -f github_update
+export -f github_status

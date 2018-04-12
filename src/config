@@ -1,0 +1,31 @@
+# vim: set ft=bash
+
+mkdir -p $CLAM_ROOT &>/dev/null
+touch "$CLAM_CONFIG"
+
+sed_escape() {
+  sed -e 's/[]\/$*.^[]/\\&/g'
+}
+
+slugify() {
+  echo ${1//[^A-Za-z0-9._-]/_}
+}
+
+config_set() {
+  config_remove "$1"
+  echo "$1=$2" >> "$CLAM_CONFIG"
+}
+
+config_get() {
+  key=$(echo "$1" | sed_escape)
+  sed -ne "/^$key/ s/$key=//p" "$CLAM_CONFIG"
+}
+
+config_grep() {
+  grep "$1" "$CLAM_CONFIG"
+}
+
+config_remove() {
+  key=$(echo "$1" | sed_escape)
+  sed -i "/^$key.*$/d" "$CLAM_CONFIG"
+}

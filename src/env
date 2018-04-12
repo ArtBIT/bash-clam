@@ -1,0 +1,7 @@
+# vim: set ft=bash
+
+export CLAM_COMMAND_NAME=${CLAM_COMMAND_NAME:-clam}
+export CLAM_ROOT=$HOME/.config/clam
+export CLAM_BIN=$CLAM_ROOT/bin
+export CLAM_CONFIG=$CLAM_ROOT/config.cfg
+export CLAM_MODULES=$CLAM_ROOT/modules
