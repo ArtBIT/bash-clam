@@ -1,6 +1,7 @@
 #!/bin/bash
 
-source src/clam
+DIR=$( cd "$( dirname "$(readlink -f "${BASH_SOURCE[0]}")" )" && pwd )
+source "$DIR/src/clam"
 
 # Sanitize global CLAM_COMMAND_NAME
 export PATH="$PATH:$CLAM_BIN"
@@ -14,6 +15,11 @@ modules=$(config_grep "#sources=.*" | sed -e 's/#sources=.*//g')
 for module in $modules; do
     scripts2source=($(config_get "$module#sources"))
 	for script in "${scripts2source[@]}"; do
-        [ -f "$CLAM_MODULES/$module/$script" ] && $(cd "$CLAM_MODULES/$module" && . "$script")
+        if [ -f "$CLAM_MODULES/$module/$script" ]; then
+            pushd . &>/dev/null
+            cd "$CLAM_MODULES/$module"
+            source "$script"
+            popd &>/dev/null
+        fi
 	done
 done
