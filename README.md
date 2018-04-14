@@ -12,10 +12,15 @@ source path/to/clam/init
 ```
 
 # Usage
-
+## Install a GitHub module and make one of its scripts executable
 ```
 clam GitUsername/git-repo --exe some_script_from_that_repo
-some_script_from_that_repo "is now an executable command"
+# some_script_from_that_repo is now an executable command
+```
+## Install a GitHub module and source one of its scripts automatically
+```
+clam GitUsername/git-repo --source some_script_from_that_repo
+# some_script_from_that_repo will now be sourced every time bash-clam is sourced
 ```
 
 # Environment
