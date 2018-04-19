@@ -15,11 +15,6 @@ modules=$(config_grep "#sources=.*" | sed -e 's/#sources=.*//g')
 for module in $modules; do
     scripts2source=($(config_get "$module#sources"))
 	for script in "${scripts2source[@]}"; do
-        if [ -f "$CLAM_MODULES/$module/$script" ]; then
-            pushd . &>/dev/null
-            cd "$CLAM_MODULES/$module"
-            source "$script"
-            popd &>/dev/null
-        fi
+        clam source "$module/$script"
 	done
 done

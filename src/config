@@ -1,28 +1,25 @@
 # vim: set ft=bash
 
+# Sed uses basic regular expressions. In a BRE, the characters $.*[\]^ need to be quoted by preceding them by a backslash, except inside character sets ([…]).
 sed_escape() {
   sed -e 's/[]\/$*.^[]/\\&/g'
 }
 
-slugify() {
-  echo ${1//[^A-Za-z0-9._-]/_}
-}
-
 config_set() {
   config_remove "$1"
-  echo "$1=$2" >> "$CLAM_CONFIG"
+  echo "$1=$2" >> "$(clam_get_env CONFIG)" 2>/dev/null
 }
 
 config_get() {
   key=$(echo "$1" | sed_escape)
-  sed -ne "/^$key/ s/$key=//p" "$CLAM_CONFIG"
+  sed -ne "/^$key/ s/$key=//p" "$(clam_get_env CONFIG)" 2>/dev/null
 }
 
 config_grep() {
-  grep "$1" "$CLAM_CONFIG"
+  grep "$1" "$(clam_get_env CONFIG)" 2>/dev/null
 }
 
 config_remove() {
   key=$(echo "$1" | sed_escape)
-  sed -i "/^$key.*$/d" "$CLAM_CONFIG"
+  sed -i "/^$key.*$/d" "$(clam_get_env CONFIG)" 2>/dev/null
 }

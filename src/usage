@@ -5,10 +5,9 @@ usage () {
 Usage: $CLAM_COMMAND_NAME [command] <github uri>
 Commands: 
  i, install                     Install packages
+ u, uninstall                   Uninstall package
  l, list                        List installed packages
  u, update                      Update installed packages
- s, status                      Check if packages are up to date
- r, remove                      Uninstall package
 
 Install Options:
  -h, --help					    Show this screen.

@@ -1,13 +1,21 @@
 # vim: set ft=bash
 
-export CLAM_COMMAND_NAME=${CLAM_COMMAND_NAME:-clam}
-export CLAM_ROOT=$HOME/.config/clam
-export CLAM_BIN=$CLAM_ROOT/bin
-export CLAM_CONFIG=$CLAM_ROOT/config.cfg
-export CLAM_MODULES=$CLAM_ROOT/modules
+export CLAM_COMMAND_NAME="${CLAM_COMMAND_NAME:-clam}"
+export CLAM_ROOT=":ROOT:"
+export CLAM_BIN=":ROOT:/bin"
+export CLAM_CONFIG=":ROOT:/clam.yml"
+export CLAM_MODULES=":ROOT:/bash_modules"
+export CLAM_USE_GLOBAL_PATH=""
 
-mkdir -p "$CLAM_BIN" &>/dev/null
-mkdir -p "$CLAM_MODULES" &>/dev/null
-mkdir -p "$CLAM_ROOT" &>/dev/null
-touch "$CLAM_CONFIG"
+clam_get_env() {
+    local root
+    if [ ! -z "$CLAM_USE_GLOBAL_PATH" ]; then
+        root="$HOME/.config/clam"
+    else
+        root="$PWD"
+    fi
 
+    local name="CLAM_$1"
+    local value="${!name}"
+    echo "${value/:ROOT:/$root}"
+}

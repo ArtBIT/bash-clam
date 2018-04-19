@@ -6,8 +6,27 @@ source $SCRIPTDIR/env
 source $SCRIPTDIR/usage
 source $SCRIPTDIR/config
 source $SCRIPTDIR/github
+source $SCRIPTDIR/utils
 
 bash_clam() {
+    # See if a global flag has been passed
+    CLAM_USE_GLOBAL_PATH=
+    FILTERED_ARGS=()
+    while [[ $# -gt 0 ]]
+    do
+    case "$1" in
+        -g | --global)
+            CLAM_USE_GLOBAL_PATH=1
+            shift
+            ;;
+        *)
+            FILTERED_ARGS+=("$1")
+            shift
+            ;;
+    esac
+    done
+    set -- "${FILTERED_ARGS[@]}"
+
     declare -a sources
     declare -a executables
     case "$1" in
@@ -17,40 +36,44 @@ bash_clam() {
         l | list) 
 			case "$2" in
 				-b | --bin)
-					ls "$CLAM_BIN"
+					ls "$(clam_get_env BIN)"
 					;;
 				-m | --modules)
-					ls "$CLAM_MODULES"
+					ls "$(clam_get_env MODULES)"
 					;;
 				-c | --config)
-					cat "$CLAM_CONFIG"
+					cat "$(clam_get_env CONFIG)"
 					;;
 				* ) 
 					config_grep "#uri" | sed -e 's/.*#uri=//g'
 					;;
 			esac
             ;;
+        r | run) 
+            shift
+            clam_run "$@" || echo "Could not find the specified file."
+            ;;
+        s | source) 
+            shift
+            clam_source "$@" || echo "Could not find the specified file."
+            ;;
         u | update) 
             modules=$(config_grep "#name" | sed -e 's/#name.*//g')
             [ ! -z "$modules" ] && echo "$modules" | tr '\n' '\0' | xargs -0 -P10 -I{} bash -c 'github_update "$@"' _ {}
             ;;
-        s | status) 
-            modules=$(config_grep "#name" | sed -e 's/#name.*//g')
-            [ ! -z "$modules" ] && echo "$modules" | tr '\n' '\0' | xargs -0 -P10 -I{} bash -c 'github_status "$@"' _ {}
-            ;;
-        r | remove)
+        u | uninstall)
             uri=$2
-            module=$(slugify "$(github_project_from_uri $uri)")
+            module=$(clam_slugify "$(github_project_from_uri $uri)")
             shift 2
 
             # remove any linked bin command
             command=$(config_get "$module#command")
             if [ ! -z "$command" ]; then
-                rm "$CLAM_BIN/$command"
+                rm "$(clam_get_env BIN)/$command"
             fi
 
             #remove the uri
-            rm -rf "$CLAM_MODULES/$module"
+            rm -rf "$(clam_get_env MODULES)/$module"
 
             # remove it from config
             config_remove "$module"
@@ -58,7 +81,6 @@ bash_clam() {
 
         i | install | "") 
             shift
-
 
             while true; do
                 case "$1" in
@@ -89,33 +111,37 @@ bash_clam() {
                 esac
             done
 
-            module=$(slugify "$(github_project_from_uri $uri)")
-            github_clone "$uri"
+            local bin_dir="$(clam_get_env LOCAL_BIN)"
+            local modules_dir="$(clam_get_env LOCAL_MODULES)"
+
+            module=$(clam_slugify "$(github_project_from_uri $uri)")
+            clam_mkdir "$modules_dir"
+
+            github_clone "$uri" "$modules_dir"
             config_set "$module#name" "$module"
             config_set "$module#uri" "$uri"
             config_set "$module#sources" "${sources[@]}"
             config_set "$module#executables" "${executables[@]}"
 
-            for executable in "${executables[@]}"
-			do
-echo "'$executable'"
-				parts=(${executable//:_:/ })
-				src_filename="${parts[0]}"
-echo "'$src_filename'"
-				dest_filename="${parts[1]}"
-				if [ -z "$dest_filename" ]; then
-					dest_filename=$src_filename
-				fi
-echo "'$dest_filename'"
-				dest_filepath="$CLAM_BIN/$(basename "$dest_filename")"
-echo "'$dest_filepath'"
-                cat << EOF > "$dest_filepath"
+            if [ "${#executables[@]}" -gt 0 ]; then 
+                clam_mkdir "$bin_dir"
+                for executable in "${executables[@]}"
+                do
+                    parts=(${executable//:_:/ })
+                    src_filename="${parts[0]}"
+                    dest_filename="${parts[1]}"
+                    if [ -z "$dest_filename" ]; then
+                        dest_filename=$src_filename
+                    fi
+                    dest_filepath="$bin_dir/$(basename "$dest_filename")"
+                    cat << EOF > "$dest_filepath"
 #!/bin/bash
-cd "$CLAM_MODULES/$module"
-./$src_filename "\$@"
+source $SCRIPTDIR/clam
+clam run "$module/$src_filename" "\$@"
 EOF
-                chmod +x "$dest_filepath"
-			done
+                    chmod +x "$dest_filepath"
+                done
+            fi
             ;;
 		*)
 			echo "Invalid command $1" >&2
