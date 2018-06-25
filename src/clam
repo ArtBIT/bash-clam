@@ -58,12 +58,13 @@ bash_clam() {
             clam_source "$@" || echo "Could not find the specified file."
             ;;
         u | update) 
-            modules=$(config_grep "#name" | sed -e 's/#name.*//g')
-            [ ! -z "$modules" ] && echo "$modules" | tr '\n' '\0' | xargs -0 -P10 -I{} bash -c 'github_update "$@"' _ {}
+            local modules=$(config_grep "#name" | sed -e 's/#name.*//g')
+            local modules_dir="$(clam_get_env MODULES)"
+            [ ! -z "$modules" ] && echo "$modules_dir/$modules" | tr '\n' '\0' | xargs -0 -P10 -I{} bash -c 'github_update "$@"' _ {}
             ;;
         u | uninstall)
             uri=$2
-            module=$(clam_slugify "$(github_project_from_uri $uri)")
+            module=$(clam_slugify "$uri")
             shift 2
 
             # remove any linked bin command
@@ -72,7 +73,7 @@ bash_clam() {
                 rm "$(clam_get_env BIN)/$command"
             fi
 
-            #remove the uri
+            #remove the cloned dir
             rm -rf "$(clam_get_env MODULES)/$module"
 
             # remove it from config
@@ -82,6 +83,8 @@ bash_clam() {
         i | install | "") 
             shift
 
+            local uri=
+            local local_module_name=
             while true; do
                 case "$1" in
                     -s | --source)
@@ -92,9 +95,13 @@ bash_clam() {
                         executables=( "${executables[@]}" "$2" )
                         shift 2
                         ;;
-                    -e | --exe-to | --copy-exe-as )
+                    --exe-to | --copy-exe-as )
                         executables=( "${executables[@]}" "$2:_:$3" )
                         shift 3
+                        ;;
+                    -a | --as)
+                        local_module_name="$2"
+                        shift 2
                         ;;
                     -* ) 
                         echo "Invalid option: -$1" >&2
@@ -103,7 +110,7 @@ bash_clam() {
                     * ) 
                         if [ -z "$1" ]; then
                             break;
-                        else
+                        else 
                             uri=$1
                             shift
                         fi
@@ -114,10 +121,14 @@ bash_clam() {
             local bin_dir="$(clam_get_env BIN)"
             local modules_dir="$(clam_get_env MODULES)"
 
-            module=$(clam_slugify "$(github_project_from_uri $uri)")
+            if [ ! -z "$local_module_name" ]; then
+                module="$local_module_name"
+            else 
+                module=$(clam_slugify "$uri")
+            fi
             clam_mkdir "$modules_dir"
 
-            github_clone "$uri" "$modules_dir"
+            github_clone "$uri" "$modules_dir" "$module"
             config_set "$module#name" "$module"
             config_set "$module#uri" "$uri"
             config_set "$module#sources" "${sources[@]}"

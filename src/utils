@@ -2,9 +2,10 @@
 
 clam_get_full_module_path() {
     local module_name="$1"
+    local module_paths="$(CLAM_USE_GLOBAL_PATH=1 clam_get_env MODULES) $(CLAM_USE_GLOBAL_PATH= clam_get_env MODULES)"
     local module_path
-    for module_path in "${CLAM_LOCAL_MODULES}/${module_name}" "${CLAM_MODULES}/${module_name}"; do
-        [ -f "$module_path" ] && echo "$module_path" && return 0
+    for module_path in $module_paths; do
+        [ -f "$module_path/$module_name" ] && echo "$module_path/$module_name" && return 0
     done
     return 1
 }
@@ -44,6 +45,6 @@ clam_touch() {
 }
 
 clam_slugify() {
-  echo ${1//[^A-Za-z0-9._-]/_}
+  echo ${1//[^A-Za-z0-9_-]/_} | tr '[:upper:]' '[:lower:]'
 }
 

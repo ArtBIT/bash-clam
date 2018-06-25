@@ -21,5 +21,5 @@ config_grep() {
 
 config_remove() {
   key=$(echo "$1" | sed_escape)
-  sed -i "/^$key.*$/d" "$(clam_get_env CONFIG)" 2>/dev/null
+  sed -i.bak "/^$key.*$/d" "$(clam_get_env CONFIG)" 2>/dev/null
 }
