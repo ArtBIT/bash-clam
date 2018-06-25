@@ -4,7 +4,7 @@ export CLAM_COMMAND_NAME="${CLAM_COMMAND_NAME:-clam}"
 export CLAM_ROOT=":ROOT:"
 export CLAM_BIN=":ROOT:/bin"
 export CLAM_CONFIG=":ROOT:/clam.yml"
-export CLAM_MODULES=":ROOT:/bash_modules"
+export CLAM_MODULES=":ROOT:/clam_modules"
 export CLAM_USE_GLOBAL_PATH=""
 
 clam_get_env() {

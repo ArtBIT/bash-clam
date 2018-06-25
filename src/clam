@@ -111,8 +111,8 @@ bash_clam() {
                 esac
             done
 
-            local bin_dir="$(clam_get_env LOCAL_BIN)"
-            local modules_dir="$(clam_get_env LOCAL_MODULES)"
+            local bin_dir="$(clam_get_env BIN)"
+            local modules_dir="$(clam_get_env MODULES)"
 
             module=$(clam_slugify "$(github_project_from_uri $uri)")
             clam_mkdir "$modules_dir"

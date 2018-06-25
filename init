@@ -1,6 +1,7 @@
 #!/bin/bash
 
-DIR=$( cd "$( dirname "$(readlink -f "${BASH_SOURCE[0]}")" )" && pwd )
+type greadlink >/dev/null 2>&1 && READLINK=greadlink || READLINK=readlink
+DIR=$( cd "$( dirname "$($READLINK -f "${BASH_SOURCE[0]}")" )" && pwd )
 source "$DIR/src/clam"
 
 # Sanitize global CLAM_COMMAND_NAME
