@@ -29,6 +29,11 @@ clam run https://github.com/ArtBIT/bash-tint/src/tint  "Running test: bold(%s) %
 # this would clone the project from github and run the file
 #   - git clone https://github.com/ArtBIT/bash-tint into $HOME/.config/clam/clam_modules 
 #   - bash $HOME/.config/clam/clam_modules/artbit_bash-tint "Running test: bold(%s) %s" "Test XYZ" "green([OK])"
+
+
+# You can also omit the github origin (protocol + domain) altogether and just use the github URI
+clam run ArtBIT/bash-oembed/oembed https://youtu.be/dQw4w9WgXcQ
+
 ```
 
 
