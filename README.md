@@ -23,6 +23,15 @@ clam GitUsername/git-repo --source some_script_from_that_repo
 # some_script_from_that_repo will now be sourced every time bash-clam is sourced
 ```
 
+## Run a GitHub project file directly
+```
+clam run https://github.com/ArtBIT/bash-tint/src/tint  "Running test: bold(%s) %s" "Test XYZ" "green([OK])"
+# this would clone the project from github and run the file
+#   - git clone https://github.com/ArtBIT/bash-tint into $HOME/.config/clam/clam_modules 
+#   - bash $HOME/.config/clam/clam_modules/artbit_bash-tint "Running test: bold(%s) %s" "Test XYZ" "green([OK])"
+```
+
+
 # Environment
 ```bash
 export CLAM_COMMAND_NAME=mollusk

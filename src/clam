@@ -51,6 +51,11 @@ bash_clam() {
             ;;
         r | run) 
             shift
+            local github_project=$(github_module "$1")
+            local module_full_path=$(clam_get_full_module_path "$github_project")
+            if [ -z "$module_full_path" ]; then
+                clam install -g "$github_project"
+            fi
             clam_run "$@" || echo "Could not find the specified file."
             ;;
         s | source) 
@@ -74,7 +79,14 @@ bash_clam() {
             fi
 
             #remove the cloned dir
-            rm -rf "$(clam_get_env MODULES)/$module"
+            while true; do
+                module_path=$(clam_get_full_module_path $module)
+                echo "$module_path"
+                if [ -z "$module_path" ]; then
+                    break;
+                fi
+                rm -r $module_path
+            done
 
             # remove it from config
             config_remove "$module"

@@ -9,16 +9,29 @@ github_update() {
 }
 
 github_clone() {
-    $(cd "$2" &>/dev/null && git clone "https://github.com/$1" "$3")
+    $(cd "$2" &>/dev/null && git clone "https://github.com/$1" "$3" &>/dev/null)
 }
 
-github_project_from_uri() {
-    echo ${1##*/}
+github_project() {
+    github_uri_from_url "$1" | sed 's#[^/]\+/\([^/]\+\).*#\1#'
 }
 
-github_username_from_uri() {
-    echo ${1%/*}
+github_username() {
+    github_uri_from_url "$1" | sed 's#/.*##'
 }
+
+github_uri_from_url() {
+    echo "$1" | sed 's#https\?://github.com/##' | sed 's#?.*##'
+}
+
+github_module() {
+    github_uri_from_url "$1" | sed 's#^\(\([^/]\+/\)\{2\}\).*#\1#' | sed 's#/$##'
+}
+
+github_subpath() {
+    github_uri_from_url "$1" | sed 's#^\([^/]\+/\)\{2\}##'
+}
+
 
 export -f github_update
 export -f github_status
