@@ -9,8 +9,11 @@ export PATH="$PATH:$CLAM_BIN"
 if [[ "$CLAM_COMMAND_NAME" =~ [^A-Za-z0-9_] ]]; then
     CLAM_COMMAND_NAME=clam
 fi
-eval "$CLAM_COMMAND_NAME() { bash_clam \"\$@\"; };"
-export -f "$CLAM_COMMAND_NAME"
+eval "${CLAM_COMMAND_NAME}() { bash_clam \"\$@\"; };"
+export -f "${CLAM_COMMAND_NAME}"
+
+eval "${CLAM_COMMAND_NAME}x() { bash_clam_x \"\$@\"; };"
+export -f "${CLAM_COMMAND_NAME}x"
 
 modules=$(config_grep "#sources=.*" | sed -e 's/#sources=.*//g')
 for module in $modules; do

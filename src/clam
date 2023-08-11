@@ -171,3 +171,10 @@ EOF
 			exit 1
     esac
 }
+
+bash_clam_x() {
+    if ! bash_clam l | grep "$1" > /dev/null; then
+        bash_clam install "$1"
+    fi
+    bash_clam run "$@"
+}
